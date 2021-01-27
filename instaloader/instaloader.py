@@ -174,6 +174,7 @@ class Instaloader:
                  download_video_thumbnails: bool = True,
                  download_geotags: bool = True,
                  download_comments: bool = True,
+                 download_full_metadata: bool = False,
                  save_metadata: bool = True,
                  compress_json: bool = True,
                  post_metadata_txt_pattern: str = None,
@@ -182,10 +183,11 @@ class Instaloader:
                  request_timeout: Optional[float] = None,
                  rate_controller: Optional[Callable[[InstaloaderContext], RateController]] = None,
                  resume_prefix: Optional[str] = "iterator",
-                 check_resume_bbd: bool = True):
+                 check_resume_bbd: bool = True,
+                 proxies: dict = None):
 
         self.context = InstaloaderContext(sleep, quiet, user_agent, max_connection_attempts,
-                                          request_timeout, rate_controller)
+                                          request_timeout, rate_controller, proxies)
 
         # configuration parameters
         self.dirname_pattern = dirname_pattern or "{target}"
@@ -195,6 +197,7 @@ class Instaloader:
         self.download_video_thumbnails = download_video_thumbnails
         self.download_geotags = download_geotags
         self.download_comments = download_comments
+        self.download_full_metadata = download_full_metadata
         self.save_metadata = save_metadata
         self.compress_json = compress_json
         self.post_metadata_txt_pattern = '{caption}' if post_metadata_txt_pattern is None \
@@ -218,6 +221,7 @@ class Instaloader:
             download_video_thumbnails=self.download_video_thumbnails,
             download_geotags=self.download_geotags,
             download_comments=self.download_comments,
+            download_full_metadata=self.download_full_metadata,
             save_metadata=self.save_metadata,
             compress_json=self.compress_json,
             post_metadata_txt_pattern=self.post_metadata_txt_pattern,
@@ -552,6 +556,9 @@ class Instaloader:
         # Update comments if desired
         if self.download_comments:
             self.update_comments(filename=filename, post=post)
+
+        if self.download_full_metadata:
+            post._obtain_metadata()
 
         # Save metadata as JSON if desired.
         if self.save_metadata:
